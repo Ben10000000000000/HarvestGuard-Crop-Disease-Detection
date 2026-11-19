@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}Model & optimisation{% endblock %}
+{% block content %}
+<h1>How Whale Optimization tuned the model</h1>
+<p class="muted">A whale swarm searches the space of <i>feature extractors + classifiers + hyper-parameters</i>. Each candidate is scored by <code>fitness = validation accuracy − λ·latency/budget − λ·model size/budget</code>, so the winner is accurate <b>and</b> cheap enough for a field device.</p>
+{% if not results %}<div class="card"><p class="mb0">No optimisation report found yet. Run <code>python -m ml.train</code> to generate it.</p></div>
+{% else %}
+{% set c = results.comparison %}{% set m = results.meta %}
+<section class="grid g3">
+  <div class="card"><div class="stat">{{ '%.1f'|format(c.woa.test_acc*100) }}%</div><div class="stat-label">WOA test accuracy (held-out)</div></div>
+  <div class="card"><div class="stat">{{ '%.1f'|format(c.woa.latency_ms) }} ms</div><div class="stat-label">per image, single CPU thread</div></div>
+  <div class="card"><div class="stat">{{ '%.0f'|format(c.woa.size_kb) }} KB</div><div class="stat-label">model size</div></div>
+</section>
+<section class="card"><h2>Hand-tuned vs random search vs WOA</h2>
+  <table><thead><tr><th>Method</th><th>Classifier</th><th>Test accuracy</th><th>Macro F1</th><th>Latency</th><th>Size</th></tr></thead><tbody>
+  {% for key, name in (('baseline','Hand-tuned baseline'),('random_search','Random search (same budget)'),('woa','Whale Optimization')) %}
+  <tr><td><b>{{ name }}</b></td><td>{{ c[key].params.classifier|upper }}</td><td>{{ '%.2f'|format(c[key].test_acc*100) }}%</td><td>{{ '%.3f'|format(c[key].test_macro_f1) }}</td><td>{{ '%.1f'|format(c[key].latency_ms) }} ms</td><td>{{ '%.0f'|format(c[key].size_kb) }} KB</td></tr>{% endfor %}</tbody></table>
+  <p class="hint">Every method is refit on train+validation and scored once on the same untouched test split ({{ m.split.test }} images of {{ m.n_images }}, {{ m.n_classes }} classes).</p>
+  <img class="report-img" src="{{ url_for('main.report_file', name='method_comparison.png') }}" alt="Bar charts comparing the three methods"></section>
+<section class="grid g2">
+  <div class="card"><h2>Convergence</h2><img class="report-img" src="{{ url_for('main.report_file', name='woa_convergence.png') }}" alt="WOA convergence curve">
+    <p class="hint">{{ m.woa.pop }} whales × {{ m.woa.iters }} iterations ({{ m.woa.unique_configs_trained }} unique configurations trained).</p></div>
+  <div class="card"><h2>Accuracy vs compute</h2><img class="report-img" src="{{ url_for('main.report_file', name='accuracy_vs_latency.png') }}" alt="Scatter of every explored configuration"></div>
+</section>
+<section class="card"><h2>Winning configuration</h2>
+  <table><tbody>{% for k, v in results.woa_best_params.items() %}<tr><th>{{ k }}</th><td class="mono">{{ v }}</td></tr>{% endfor %}</tbody></table></section>
+<section class="card"><h2>Where the model confuses classes</h2><img class="report-img" src="{{ url_for('main.report_file', name='confusion_matrix.png') }}" alt="Confusion matrix">
+  <p class="hint">PlantVillage photos are taken on a plain background; accuracy on real field photos with cluttered backgrounds will be lower. Treat results as decision support.</p></section>
+{% endif %}
+{% endblock %}

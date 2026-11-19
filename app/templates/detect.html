@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Scan a leaf{% endblock %}
+{% block content %}
+<h1>Scan a leaf</h1>
+{% if not ready %}<div class="flash error">The model file is missing. Train it first: <code>python -m ml.train --data-dir &lt;PlantVillage folder&gt;</code> (see README).</div>{% endif %}
+<div class="grid g2">
+  <form class="card" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="drop" for="leaf">
+      <input id="leaf" name="leaf" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" required>
+      <b>Tap to take a photo or choose an image</b><br><span class="muted small" data-file-label>or drag &amp; drop a JPG / PNG / WebP (max 8 MB)</span>
+      <img class="preview" alt="Selected leaf preview">
+    </label>
+    <div class="field mt"><label for="note">Field note (optional)</label><input id="note" name="note" type="text" maxlength="200" placeholder="e.g. Block C, row 4"></div>
+    <button class="btn block" type="submit" data-submit disabled {% if not ready %}aria-disabled="true"{% endif %}><span class="spinner"></span> Analyse leaf</button>
+  </form>
+  <div class="card"><h2>For the best result</h2>
+    <ul class="actions"><li>Photograph <b>one leaf</b>, filling most of the frame.</li><li>Use daylight; avoid harsh shadows and flash glare.</li><li>Put the leaf on a plain background if you can.</li><li>Include the affected part — spots, mould, curling.</li><li>If the confidence is low, retake from another angle.</li></ul>
+    <p class="hint">The model recognises 15 crop–condition classes from PlantVillage (bell pepper, potato and tomato). Other crops will not be recognised reliably.</p></div>
+</div>
+{% endblock %}

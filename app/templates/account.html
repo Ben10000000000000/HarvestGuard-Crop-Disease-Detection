@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Account{% endblock %}
+{% block content %}
+<h1>Your account</h1>
+<div class="grid g2">
+  <section class="card"><h2>Profile</h2>
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="profile">
+      <div class="field"><label for="name">Name</label><input id="name" name="name" type="text" required minlength="2" maxlength="60" value="{{ g.user['name'] }}"></div>
+      <div class="field"><label>Email</label><input type="email" value="{{ g.user['email'] }}" disabled></div>
+      <button class="btn" type="submit">Save</button></form>
+    <p class="small muted mt">Member since {{ user_row['created_at'][:10] }} · {{ n_predictions }} scans saved</p></section>
+  <section class="card"><h2>Change password</h2>
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="password">
+      <div class="field"><label for="current">Current password</label><input id="current" name="current" type="password" autocomplete="current-password" required></div>
+      <div class="field"><label for="password">New password</label><div class="pw-wrap"><input id="password" name="new" type="password" autocomplete="new-password" required minlength="8" data-pw-check><button class="pw-toggle" type="button" aria-pressed="false">Show</button></div>{% include "_pw_rules.html" %}</div>
+      <div class="field"><label for="confirm">Confirm new password</label><input id="confirm" name="confirm" type="password" autocomplete="new-password" required data-pw-confirm></div>
+      <button class="btn" type="submit">Update password</button></form></section>
+</div>
+<section class="card danger-zone"><h2>Delete account</h2><p class="muted">Permanently removes your profile, scan history and uploaded photos. This cannot be undone.</p>
+  <form method="post" data-confirm="Delete your account and all data permanently?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="delete">
+    <div class="field"><label for="dpw">Confirm with your password</label><input id="dpw" name="password" type="password" autocomplete="current-password" required></div>
+    <button class="btn danger" type="submit">Delete my account</button></form></section>
+{% endblock %}

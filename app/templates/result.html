@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block title %}{{ advice.crop }} – {{ advice.condition }}{% endblock %}
+{% block content %}
+<p class="small"><a href="{{ url_for('main.history') }}">← History</a></p>
+<div class="grid g2">
+  <div class="card"><img class="leaf-img" src="{{ url_for('main.media', pid=p.id) }}" alt="Scanned leaf">
+    <p class="small muted mt mb0">Scanned {{ p.created_at }} UTC · {{ '%.1f'|format(p.latency_ms or 0) }} ms{% if p.note %} · “{{ p.note }}”{% endif %}</p></div>
+  <div class="card">
+    <div class="result-head">
+      {% if advice.healthy %}<span class="badge ok">HEALTHY</span>{% elif advice.kind == 'pest' %}<span class="badge warn">PEST</span>{% else %}<span class="badge {{ 'bad' if advice.urgency=='high' else 'warn' }}">{{ advice.kind|upper }} · {{ advice.urgency|upper }} URGENCY</span>{% endif %}
+    </div>
+    <h1>{{ advice.crop }}: {{ advice.condition }}</h1>
+    <div class="row spread"><span class="small muted">Confidence</span><b>{{ '%.1f'|format(p.confidence*100) }}%</b></div>
+    <progress max="100" value="{{ '%.0f'|format(p.confidence*100) }}" class="{{ 'warn' if uncertain else '' }}"></progress>
+    {% if uncertain %}<div class="flash warn mt"><b>Low confidence.</b> The model isn't sure — retake the photo (single leaf, daylight, plain background) or compare with the alternatives below.</div>{% endif %}
+    <p class="mt">{{ advice.summary }}</p>
+    <h3>{{ 'Keep it healthy' if advice.healthy else 'What to do' }}</h3>
+    <ul class="actions">{% for a in advice.actions %}<li>{{ a }}</li>{% endfor %}</ul>
+    <p class="disclaimer">{{ advice.disclaimer }}</p>
+  </div>
+</div>
+<section class="card"><h2>Other possibilities</h2>
+  {% for t in top %}<div class="alt"><span>{{ t.crop }} — {{ t.condition }}</span><span class="pct">{{ '%.1f'|format(t.confidence*100) }}%</span><progress max="100" value="{{ '%.0f'|format(t.confidence*100) }}"></progress></div>{% endfor %}</section>
+<div class="row mt"><a class="btn" href="{{ url_for('main.detect') }}">Scan another leaf</a>
+  <form method="post" action="{{ url_for('main.delete_prediction', pid=p.id) }}" data-confirm="Delete this scan and its photo?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn ghost" type="submit">Delete scan</button></form></div>
+{% endblock %}

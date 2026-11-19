@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}History{% endblock %}
+{% block content %}
+<div class="row spread"><h1>Scan history</h1><a class="btn" href="{{ url_for('main.detect') }}">New scan</a></div>
+<nav class="tabs" aria-label="Filter">{% for k,l in (('all','All'),('diseased','Diseased'),('healthy','Healthy')) %}<a href="{{ url_for('main.history', filter=k) }}" {% if q==k %}aria-current="true"{% endif %}>{{ l }}</a>{% endfor %}</nav>
+{% if rows %}
+<div class="thumbs">{% for r in rows %}
+  <a class="card thumb" href="{{ url_for('main.result', pid=r.id) }}"><img src="{{ url_for('main.media', pid=r.id) }}" alt="Leaf scan {{ r.id }}" loading="lazy">
+    <div class="meta"><b>{{ r.crop }}</b><span class="small">{{ r.condition }}</span><br>
+      <span class="badge {{ 'ok' if r.is_healthy else 'bad' }}">{{ 'Healthy' if r.is_healthy else 'Issue' }}</span> <span class="small muted">{{ '%.0f'|format(r.confidence*100) }}% · {{ r.created_at[:10] }}</span></div></a>{% endfor %}</div>
+{% if pages > 1 %}<div class="row mt">{% if page > 1 %}<a class="btn ghost small" href="{{ url_for('main.history', filter=q, page=page-1) }}">← Newer</a>{% endif %}<span class="muted small">Page {{ page }} of {{ pages }}</span>{% if page < pages %}<a class="btn ghost small" href="{{ url_for('main.history', filter=q, page=page+1) }}">Older →</a>{% endif %}</div>{% endif %}
+{% else %}<div class="card"><p class="muted mb0">Nothing here yet. <a href="{{ url_for('main.detect') }}">Scan your first leaf</a>.</p></div>{% endif %}
+{% endblock %}

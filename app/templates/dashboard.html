@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row spread"><div><h1>Hello, {{ g.user['name'].split()[0] }}</h1><p class="muted">Your field overview.</p></div><a class="btn" href="{{ url_for('main.detect') }}">Scan a leaf</a></div>
+<section class="grid g3">
+  <div class="card"><div class="stat">{{ totals.n }}</div><div class="stat-label">leaves scanned</div></div>
+  <div class="card"><div class="stat">{{ totals.healthy }}</div><div class="stat-label">healthy</div></div>
+  <div class="card"><div class="stat">{{ totals.n - totals.healthy }}</div><div class="stat-label">with disease or pests</div></div>
+</section>
+{% if totals.n == 0 %}
+<section class="card"><h2>Start your first scan</h2><p class="muted">Take a clear photo of a single leaf in good light and upload it. Results appear in a few milliseconds.</p><a class="btn" href="{{ url_for('main.detect') }}">Scan your first leaf</a></section>
+{% else %}
+<section class="grid g2">
+  <div class="card"><h2>Most frequent problems</h2>
+    {% if top %}<table><thead><tr><th>Crop</th><th>Condition</th><th>Scans</th></tr></thead><tbody>{% for t in top %}<tr><td>{{ t.crop }}</td><td>{{ t.condition }}</td><td>{{ t.n }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="muted mb0">No diseases detected so far — great news.</p>{% endif %}</div>
+  <div class="card"><h2>Average confidence</h2><div class="stat">{{ '%.0f'|format(totals.conf*100) }}%</div><progress max="100" value="{{ '%.0f'|format(totals.conf*100) }}"></progress><p class="hint">Low-confidence scans are flagged — retake the photo in better light.</p></div>
+</section>
+<section><div class="row spread"><h2>Recent scans</h2><a href="{{ url_for('main.history') }}">View all →</a></div>
+  <div class="thumbs">{% for r in recent %}
+    <a class="card thumb" href="{{ url_for('main.result', pid=r.id) }}"><img src="{{ url_for('main.media', pid=r.id) }}" alt="Leaf scan {{ r.id }}" loading="lazy"><div class="meta"><b>{{ r.crop }}</b><span class="small muted">{{ r.condition }} · {{ '%.0f'|format(r.confidence*100) }}%</span></div></a>{% endfor %}</div></section>
+{% endif %}
+{% endblock %}

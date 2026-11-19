@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Choose a new password{% endblock %}
+{% block content %}
+<div class="card auth">
+  <h1>Choose a new password</h1>
+  <p class="muted">Code accepted. Pick a new password for your account.</p>
+  <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field"><label for="password">New password</label>
+      <div class="pw-wrap"><input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" data-pw-check><button class="pw-toggle" type="button" aria-pressed="false">Show</button></div>{% include "_pw_rules.html" %}</div>
+    <div class="field"><label for="confirm">Confirm password</label><input id="confirm" name="confirm" type="password" autocomplete="new-password" required data-pw-confirm></div>
+    <button class="btn block" type="submit">Update password</button></form>
+</div>
+{% endblock %}
